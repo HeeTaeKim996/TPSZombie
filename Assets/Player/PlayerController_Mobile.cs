@@ -16,6 +16,12 @@ public class PlayerController_Mobile : PlayerController
     private bool didTouchRotate = false;
     private Vector2 preRotVec;
 
+    public RectTransform fireRect;
+    private float fireRadius;
+    private int fireId = -1;
+    private bool didTouchFire = false;
+
+
     private void Awake()
     {
         
@@ -24,6 +30,7 @@ public class PlayerController_Mobile : PlayerController
     {
         moveInitPosition = moveRect.anchoredPosition;
         moveRadius = moveRect.rect.width / 2f * 0.9f;
+        fireRadius = fireRect.rect.width / 2f * 0.9f;
     }
 
     private void Update()
@@ -42,6 +49,8 @@ public class PlayerController_Mobile : PlayerController
 
                     moveId = touch.fingerId;
                     didTouchMove = true;
+
+                    Debug.Log(touch.position);
                 }
                 else if( ( touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary) && didTouchMove)
                 { 
@@ -79,6 +88,29 @@ public class PlayerController_Mobile : PlayerController
                     rotId = -1;
                     didTouchRotate = false;
                 }
+            }
+
+            if (fireId == -1 || fireId == touch.fingerId)
+            {
+                if(touch.phase == TouchPhase.Began && IsTouchWithinCircle(touch.position, fireRect, fireRadius))
+                {
+                    playerMovement.OnFireTouchBegan();
+
+                    fireId = touch.fingerId;
+                    didTouchFire = true;
+                }
+                else if( (touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary) && didTouchFire)
+                {
+                    playerMovement.OnFireTouchDrag();
+                }
+                else if( (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled) && didTouchFire)
+                {
+                    playerMovement.OnFireTouchEnd();
+
+                    fireId = touch.fingerId;
+                    didTouchFire = false;
+                }
+
             }
         }
     }
